@@ -13,7 +13,7 @@ if Rails::VERSION::MAJOR == 2
       cattr_accessor :em_mailer_settings
 
       def perform_delivery_em_mailer(mail)
-        em_client = Em::Mailer.new(em_mailer_settings)
+        em_client = Em::Mailer::Client.new(em_mailer_settings)
         em_client.deliver!(mail)
       end
     end
