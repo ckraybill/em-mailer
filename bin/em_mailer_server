@@ -9,7 +9,7 @@ require 'yajl'
 options = {}
 
 optparse = OptionParser.new do |opts|
-  opts.banner = "Usage: server.rb [options]"
+  opts.banner = "Usage: em_mailer_server [options]"
 
   options[:host] = '127.0.0.1'
   opts.on('-o', '--host HOST', 'listen on HOST (default: 127.0.0.1)') do |host|
