@@ -1,0 +1,70 @@
+#!/usr/bin/env ruby
+
+require 'rubygems'
+require 'eventmachine'
+require 'optparse'
+require 'mail'
+require 'yajl'
+
+options = {}
+
+optparse = OptionParser.new do |opts|
+  opts.banner = "Usage: server.rb [options]"
+
+  options[:host] = '127.0.0.1'
+  opts.on('-o', '--host HOST', 'listen on HOST (default: 127.0.0.1)') do |host|
+    options[:host] = host
+  end
+
+  options[:port] = 5600
+  opts.on('-p', '--port PORT', 'use PORT (default: 5600)') do |port|
+    options[:port] = port
+  end
+
+  opts.on('-D', '--daemonize', 'run daemonized in the background') { |d|
+    options[:daemonize] = d ? true : false
+  }
+
+  opts.on('-h', '--help', 'display this screen') do
+    puts opts
+    exit 0
+  end
+
+  opts.parse! ARGV
+end
+
+module MailServer
+  def post_init
+    @parser = Yajl::Parser.new(:symbolize_keys => true)
+    @parser.on_parse_complete = Proc.new { |obj| object_parsed(obj) }
+  end
+
+  def object_parsed(obj)
+    puts "delivering #{obj[:message]}"
+    mail = Mail.new(obj[:message])
+    mail.delivery_method obj[:delivery_method].to_sym, obj[:delivery_options]
+    mail.deliver
+  end
+
+  def receive_data(data)
+    @parser << data
+  end
+end
+
+EM.run{
+  EM.start_server options[:host], options[:port], MailServer
+  if options[:daemonize]
+    if RUBY_VERSION < "1.9"
+      exit if fork
+      Process.setsid
+      exit if fork
+      Dir.chdir "/"
+      File.umask 0000
+      STDIN.reopen "/dev/null"
+      STDOUT.reopen "/dev/null", "a"
+      STDERR.reopen "/dev/null", "a"
+    else
+      Process.daemon
+    end
+  end
+}
