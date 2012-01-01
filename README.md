@@ -122,3 +122,7 @@ running. Here's my sample monit script:
       if failed port 5600 then restart
       group mail
 
+License
+-------
+Em::Mailer is Copyright (c) 2011 by Chris Kraybill and is provided under the MIT license. See COPYING for details.
+
