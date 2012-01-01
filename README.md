@@ -1,39 +1,43 @@
-#README
+em-mailer
+=========
+EM-Mailer is an asynchronous delivery implementation for ActionMailer
+that includes a mail client for your ActionMailer message deliveries
+and an eventmachine-based server-side process.
 
-WARNING: This is an experiment.
+Delivering large numbers of e-mail messages synchronously is an
+exercise in disaster. And yes, there are lots of other implementations
+for asynchronous message delivery (ar_mailer, background job submission
+via a number of queue-based implementations, incl. MailHopper).
 
-You probably don't want to use this (quite yet). I haven't even begun
-to see if it works on Rails 3. But, I can assure you it *is* working
-in production for an old Rails 2 customer.
+I personally wanted a lightweight daemon to do this for me, and didn't
+want to have to use my database or configure Resque or DelayedJob to
+handle these mass deliveries.
 
-For those that have read the aforementioned caveats and are gluttons
-for punishment, please read on.
+Enter eventmachine and em-mailer.
 
-##Why?
-I wrote em-mailer to solve a problem that I was having. I wanted to
-send e-mails (to a fair # of subscribers) asynchronously. I didn't
-want to use Resque or another background job / worker solution for 
-this, I wanted a drop-dead simple mail server process whose sole job
-was to accept Mail messages encoded as JSON over a socket, and then 
-deliver them according to the delivery options (I've tested both
-:sendmail and :smtp configurations).
+Installation
+------------
+Getting em-mailer installed is straightforward. In your Gemfile:
 
-##Rails 2
-I originally wrote em_mailer for an old Rails 2 app that I hadn't
-bothered getting around to migrating, so there's built-in support
-for similarly lazy-minded individuals.
+    gem 'em_mailer'
 
-In config/environment.rb:
-
-    config.gem 'em_mailer'
-
-In config/environments/production.rb
+Configuration
+-------------
+You must let ActionMailer know that you wish to use em-mailer as your
+delivery method. Either in your application's config/application.rb
+file (assuming Rails 3), or in an environment-specific config file
+such as config/environments/production.rb:
 
     config.action_mailer.delivery_method = :em_mailer
 
-Out of the box it works with :sendmail delivery as the default.
+Presuming you are sending e-mails via :sendmail that's all that is
+required for getting your Rails application configured.
 
-If you wish to use SMTP you can do something like this:
+If you want to use a different delivery method, or if you require
+additional delivery options, use the em_mailer_settings class
+attribute values.
+
+For example, if you wish to use SMTP you can do something like this:
 
 In config/initializers/em_mailer.rb
 
@@ -46,18 +50,16 @@ In config/initializers/em_mailer.rb
       :user_name => '<< user with access to smtp host >>',
       :password => '<< their password >>'
     }
-    
-##Rails 3
-In your Gemfile
 
-    gem 'em_mailer'
+Rails Support
+-------------
+I have tested this with both a Rails 3.1 and Rails 2.x applications.
 
-That should be all that's necessary. Again, haven't experimented (yet).
-
-##Running the Mail Server
+Running the Mail Server
+-----------------------
 You'll need a running instance of the mail server running. The gem
-comes bundled with a binary em_mailer_server. You can run it from
-a command line thusly:
+comes bundled with a binary called em_mailer_server. You can run it
+from the command line thusly:
 
     em_mailer_server
 
@@ -72,10 +74,11 @@ You can also specify the port that you want the server to listen on
 
 For a full list of configuration options pass it a -h, or --help.
 
-##Start/Stop Script
+Start/Stop Script
+-----------------
 I happen to be running em_mailer_server on a CentOS box. Here's my
 /etc/init.d/em_mailer script that I use to start|stop|restart the
-process on the host server
+process on that host:
 
     #!/bin/bash
     #
@@ -108,7 +111,8 @@ process on the host server
  
     exit $RETVAL
 
-##Monitoring
+Monitoring
+----------
 Lastly, I like to use monit to make sure my daemon processes are up and
 running. Here's my sample monit script:
 
