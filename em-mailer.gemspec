@@ -23,6 +23,8 @@ Gem::Specification.new do |s|
   s.add_dependency "eventmachine"
   s.add_dependency "mail"
   s.add_dependency "yajl-ruby"
+  s.add_dependency "actionmailer"
 
-  # s.add_development_dependency "rspec"
+  s.add_development_dependency "rspec"
+  s.add_development_dependency "em-spec"
 end

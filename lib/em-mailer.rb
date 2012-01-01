@@ -1,7 +1,8 @@
+require "action_mailer"
 require "em-mailer/version"
 require "em-mailer/client"
 
-if Rails::VERSION::MAJOR == 2
+if defined?(Rails) && Rails::VERSION::MAJOR == 2
   module ActionMailer
     class Base
       @@em_mailer_settings = {
