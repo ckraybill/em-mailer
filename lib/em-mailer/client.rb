@@ -16,13 +16,17 @@ module Em
       attr_accessor :settings
 
       def deliver!(mail)
-        socket = TCPSocket.new(settings[:host], settings[:port])
+        socket = open_socket
         Yajl::Encoder.encode({
           :message          => mail.to_s,
           :delivery_method  => settings[:delivery_method],
           :delivery_options => settings[:delivery_options]
         }, socket)
         socket.close
+      end
+
+      def open_socket
+        TCPSocket.new(settings[:host], settings[:port])
       end
     end
   end
