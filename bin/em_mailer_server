@@ -21,6 +21,11 @@ optparse = OptionParser.new do |opts|
     options[:port] = port
   end
 
+  options[:pid] = 'tmp/pids/em_mailer.pid'
+  opts.on('-P', '--pid PID', 'specify path to write PID (default: tmp/pids/em_mailer.pid)') do |pid|
+    options[:pid] = pid
+  end
+
   opts.on('-D', '--daemonize', 'run daemonized in the background') { |d|
     options[:daemonize] = d ? true : false
   }
@@ -67,4 +72,5 @@ EM.run{
       Process.daemon
     end
   end
+  File.open(options[:pid], 'w') { |f| f << Process.pid }
 }
